@@ -1,5 +1,7 @@
 #include "application.hpp"
 
+#include "input/input.hpp"
+
 bool Application::init() {
     constexpr int windowWidth = 800;
     constexpr int windowHeight = 450;
@@ -51,20 +53,20 @@ void Application::shutdown() {
 void Application::update(float dt) {
     (void)dt;
 
-    if (IsKeyPressed(KEY_SPACE) && fxWav.has_value()) {
-        PlaySound(fxWav.value().get());
+    if (input::wasPressed(input::Key::SPACE) && fxWav.has_value()) {
+        PlaySound(fxWav->get());
     }
 }
 
 void Application::draw() {
         if (checkerboard.has_value()) {
             DrawText("TextureResource RAII example", 250, 100, 20, DARKGRAY);
-            DrawTexture(checkerboard.value().get(), 336, 161, WHITE);
+            DrawTexture(checkerboard->get(), 336, 161, WHITE);
         }
 
         if (font.has_value()) {
             DrawText("Loaded through the wrapper", 280, 330, 20, LIGHTGRAY);
-            DrawTextEx(font.value().get(), "Using custom TTF font!", Vector2{ 20, 80 }, (float)font.value().get().baseSize, 2, MAROON);
+            DrawTextEx(font->get(), "Using custom TTF font!", Vector2{ 20, 80 }, (float)font->get().baseSize, 2, MAROON);
         }
 }
 

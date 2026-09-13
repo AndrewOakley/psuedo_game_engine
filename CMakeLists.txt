@@ -33,6 +33,7 @@ add_executable(${PROJECT_NAME}
     src/resources/texture.cpp
     src/resources/sound.cpp
     src/resources/font.cpp
+    src/input/input.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 target_include_directories(${PROJECT_NAME} PRIVATE src)
