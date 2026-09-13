@@ -29,6 +29,7 @@ FetchContent_MakeAvailable(raylib)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
+    src/application.cpp
     src/resources/texture.cpp
     src/resources/sound.cpp
     src/resources/font.cpp
