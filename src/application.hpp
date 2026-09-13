@@ -1,11 +1,6 @@
 #pragma once
 
-#include <optional>
-#include "raylib.h"
-
-#include "resources/texture.hpp"
-#include "resources/font.hpp"
-#include "resources/sound.hpp"
+#include "entities/player.hpp"
 
 class Application {
 public:
@@ -20,9 +15,7 @@ public:
     void shutdown();
 
 private:
-    std::optional<resources::TextureResource> checkerboard;
-    std::optional<resources::FontResource> font;
-    std::optional<resources::SoundResource> fxWav;
+    entities::Player player_;
 
     void update(float dt);
     void draw();

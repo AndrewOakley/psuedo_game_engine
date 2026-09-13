@@ -5,13 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Compiler Warnings
-if (MSVC)
-    add_compile_options(/W4)
-else()
-    add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 # Disable Raylib extras & examples before FetchContent
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
@@ -34,6 +27,13 @@ add_executable(${PROJECT_NAME}
     src/resources/sound.cpp
     src/resources/font.cpp
     src/input/input.cpp
+    src/entities/player.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 target_include_directories(${PROJECT_NAME} PRIVATE src)
+
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+endif()
