@@ -28,6 +28,9 @@ add_executable(${PROJECT_NAME}
     src/resources/font.cpp
     src/input/input.cpp
     src/entities/player.cpp
+    src/entities/wall.cpp
+    src/entities/projectile.cpp
+    src/entities/enemy.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 target_include_directories(${PROJECT_NAME} PRIVATE src)
