@@ -32,6 +32,26 @@ const Rectangle& Player::bounds() const noexcept {
     return bounds_;
 }
 
+void Player::resolveCollision(const Rectangle& otherBounds) noexcept {
+    const Rectangle overlap = GetCollisionRec(bounds_, otherBounds);
+    if (overlap.width <= 0.0F || overlap.height <= 0.0F) {
+        return;
+    }
+
+    const float playerCenterX = bounds_.x + (bounds_.width * 0.5F);
+    const float playerCenterY = bounds_.y + (bounds_.height * 0.5F);
+    const float otherCenterX = otherBounds.x + (otherBounds.width * 0.5F);
+    const float otherCenterY = otherBounds.y + (otherBounds.height * 0.5F);
+
+    if (overlap.width < overlap.height) {
+        position_.x += playerCenterX < otherCenterX ? -overlap.width : overlap.width;
+    } else {
+        position_.y += playerCenterY < otherCenterY ? -overlap.height : overlap.height;
+    }
+
+    updateBounds();
+}
+
 void Player::updateBounds() noexcept {
     bounds_ = {
         position_.x - (kSize / 2.0F),

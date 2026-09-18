@@ -30,4 +30,7 @@ private:
     void update(float dt);
     void draw();
     void spawnProjectile();
+    void updateEntities(float dt);
+    void resolveCollisions();
+    void removeDestroyedEntities();
 };

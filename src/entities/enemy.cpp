@@ -9,10 +9,14 @@ Enemy::Enemy(Vector2 startPosition)
 }
 
 void Enemy::update(float dt) {
+    if (!alive_) {
+        return;
+    }
+
     directionTimer_ += dt;
     while (directionTimer_ >= directionCooldown_) {
         directionTimer_ -= directionCooldown_;
-        direction_.x *= -1.0F;
+        direction_.y *= -1.0F;
     }
 
     velocity_ = Vector2Scale(direction_, kMoveSpeed);
@@ -29,6 +33,14 @@ void Enemy::draw() const {
 
 const Rectangle& Enemy::bounds() const noexcept {
     return bounds_;
+}
+
+bool Enemy::isAlive() const noexcept {
+    return alive_;
+}
+
+void Enemy::destroy() noexcept {
+    alive_ = false;
 }
 
 void Enemy::updateBounds() noexcept {

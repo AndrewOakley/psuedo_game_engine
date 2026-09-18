@@ -9,6 +9,7 @@ public:
 
     void update(float dt);
     void draw() const;
+    void resolveCollision(const Rectangle& otherBounds) noexcept;
 
     [[nodiscard]] const Rectangle& bounds() const noexcept;
 
