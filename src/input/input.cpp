@@ -44,6 +44,10 @@ bool input::wasPressed(MouseButton mouseButton) {
     return IsMouseButtonPressed(toRaylibMouseButton(mouseButton));
 }
 
+Vector2 input::mouseCameraPosition(Camera2D camera) {
+    return GetScreenToWorld2D(mousePosition(), camera);
+}
+
 Vector2 input::mousePosition() {
     return GetMousePosition();
 }

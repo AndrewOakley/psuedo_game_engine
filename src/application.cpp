@@ -48,6 +48,11 @@ bool Application::init() {
     walls_.emplace_back(Vector2 { 0.0F, 0.0F }, kWallThickness, kWindowHeight);
     walls_.emplace_back(Vector2 { kWindowWidth - kWallThickness, 0.0F }, kWallThickness, kWindowHeight);
 
+    camera.target = { player_.position().x, player_.position().y };
+    camera.offset = { kWindowWidth / 2.0f, kWindowHeight / 2.0f };
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
+
     return true;
 }
 
@@ -83,6 +88,8 @@ void Application::shutdown() {
 }
 
 void Application::update(float dt) {
+    camera.target = { player_.position().x, player_.position().y };
+
     enemySpawnTimer_ += dt;
     while (enemySpawnTimer_ >= enemySpawnCooldown_) {
         enemySpawnTimer_ -= enemySpawnCooldown_;
@@ -99,6 +106,7 @@ void Application::update(float dt) {
 }
 
 void Application::draw() {
+    BeginMode2D(camera);
     for (const entities::Wall& wall : walls_) {
         wall.draw();
     }
@@ -112,6 +120,7 @@ void Application::draw() {
     }
 
     player_.draw();
+    EndMode2D();
 
     const std::string healthText = "Health: " + std::to_string(player_.health());
     const std::string progressText = "Enemies: " + std::to_string(enemiesDefeated_) + "/" + std::to_string(kEnemiesToDefeat);
@@ -204,8 +213,8 @@ void Application::removeDestroyedEntities() {
 }
 
 void Application::spawnProjectile() {
-    const Vector2 mousePosition = input::mousePosition();
-    const Vector2 direction = Vector2Subtract(mousePosition, player_.position());
+    const Vector2 mouseCameraPosition = input::mouseCameraPosition(camera);
+    const Vector2 direction = Vector2Subtract(mouseCameraPosition, player_.position());
     if (Vector2LengthSqr(direction) == 0.0F) {
         return;
     }

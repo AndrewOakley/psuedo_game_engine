@@ -25,6 +25,7 @@ public:
 private:
     void shutdown();
     std::optional<resources::FontResource> font_;
+    Camera2D camera { 0 };
     entities::Player player_;
     std::vector<entities::Enemy> enemies_;
     std::vector<entities::Wall> walls_;

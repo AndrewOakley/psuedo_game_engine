@@ -14,6 +14,7 @@ namespace input {
     bool wasPressed(MouseButton mouseButton);
 
     Vector2 mousePosition();
+    Vector2 mouseCameraPosition(Camera2D camera);
     Vector2 mouseDelta();
     float mouseWheelDelta();
 }
