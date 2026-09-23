@@ -22,7 +22,7 @@ private:
     Rectangle bounds_ {};
     bool alive_ { true };
 
-    static constexpr float kMoveSpeed = 100.0F;
+    static constexpr float kMoveSpeed = 300.0F;
     static constexpr float kSize = 5.0F;
 };
 }

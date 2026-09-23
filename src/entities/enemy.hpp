@@ -7,12 +7,15 @@ class Enemy final {
 public:
     explicit Enemy(Vector2 startPosition = { 200.0f, 200.0f });
 
-    void update(float dt);
+    void update(float dt, Vector2 targetPosition);
     void draw() const;
     void destroy() noexcept;
 
     [[nodiscard]] const Rectangle& bounds() const noexcept;
     [[nodiscard]] bool isAlive() const noexcept;
+
+    [[nodiscard]] bool damagesPlayer() noexcept;
+    void resetPlayerDamage() noexcept;
 
 private:
     void updateBounds() noexcept;
@@ -21,9 +24,7 @@ private:
     Vector2 position_ {};
     Vector2 velocity_ {};
     Rectangle bounds_ {};
-    Vector2 direction_ { 0.0F, -1.0F };
-    float directionCooldown_ { 5.0F };
-    float directionTimer_ { 0.0F };
+    bool hasDamagedPlayer_ { false };
 
     static constexpr float kMoveSpeed = 50.0F;
     static constexpr float kSize = 50.0F;

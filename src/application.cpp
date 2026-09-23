@@ -1,21 +1,26 @@
 #include "application.hpp"
 
+#include <string>
+
+#include "raymath.h"
 #include "raylib.h"
+
+#include "input/input.hpp"
+#include "resources/font.hpp"
 
 namespace {
 constexpr int kWindowWidth = 800;
 constexpr int kWindowHeight = 450;
 constexpr int kTargetFramesPerSecond = 60;
+constexpr float kWallThickness = 20.0F;
+constexpr float kEnemySpawnMargin = 50.0F;
 
 constexpr Rectangle kWorldBounds {
-    0.0F,
-    0.0F,
+    0.0f,
+    0.0f,
     static_cast<float>(kWindowWidth),
     static_cast<float>(kWindowHeight)
 };
-
-constexpr Vector2 kProjectileSpawnPosition { 30.0F, 100.0F };
-constexpr Vector2 kProjectileDirection { 1.0F, 0.0F };
 }
 
 bool Application::init() {
@@ -34,18 +39,29 @@ bool Application::init() {
 
     SetTargetFPS(kTargetFramesPerSecond);
 
-    enemies_.emplace_back(Vector2 { 100.0F, 300.0F });
-    walls_.emplace_back(Vector2 { 600.0F, 100.0F }, 20.0F, 200.0F);
-    walls_.emplace_back(Vector2 { 700.0F, 100.0F }, 80.0F, 200.0F);
+    font_ = resources::FontResource("assets/fonts/PixAntiqua.ttf");
+
+    enemies_.emplace_back(Vector2 { 100.0f, 300.0f });
+
+    walls_.emplace_back(Vector2 { 0.0F, 0.0F }, kWindowWidth, kWallThickness);
+    walls_.emplace_back(Vector2 { 0.0F, kWindowHeight - kWallThickness }, kWindowWidth, kWallThickness);
+    walls_.emplace_back(Vector2 { 0.0F, 0.0F }, kWallThickness, kWindowHeight);
+    walls_.emplace_back(Vector2 { kWindowWidth - kWallThickness, 0.0F }, kWallThickness, kWindowHeight);
 
     return true;
+}
+
+Application::~Application() {
+    shutdown();
 }
 
 void Application::run() {
     while (!WindowShouldClose()) {
         const float dt = GetFrameTime();
 
-        update(dt);
+        if (player_.isAlive() && !hasWon_) {
+            update(dt);
+        }
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -55,6 +71,8 @@ void Application::run() {
 }
 
 void Application::shutdown() {
+    font_.reset();
+
     if (IsAudioDeviceReady()) {
         CloseAudioDevice();
     }
@@ -65,9 +83,13 @@ void Application::shutdown() {
 }
 
 void Application::update(float dt) {
-    projectileTimer_ += dt;
-    while (projectileTimer_ >= projectileCooldown_) {
-        projectileTimer_ -= projectileCooldown_;
+    enemySpawnTimer_ += dt;
+    while (enemySpawnTimer_ >= enemySpawnCooldown_) {
+        enemySpawnTimer_ -= enemySpawnCooldown_;
+        spawnEnemy();
+    }
+
+    if (input::wasPressed(input::Key::SPACE)) {
         spawnProjectile();
     }
 
@@ -90,6 +112,17 @@ void Application::draw() {
     }
 
     player_.draw();
+
+    const std::string healthText = "Health: " + std::to_string(player_.health());
+    const std::string progressText = "Enemies: " + std::to_string(enemiesDefeated_) + "/" + std::to_string(kEnemiesToDefeat);
+    DrawTextEx(font_->get(), healthText.c_str(), { 30.0F, 30.0F }, 20.0F, 0.0F, RED);
+    DrawTextEx(font_->get(), progressText.c_str(), { 30.0F, 55.0F }, 20.0F, 0.0F, BLACK);
+
+    if (!player_.isAlive()) {
+        DrawTextEx(font_->get(), "GAME OVER", { 320.0F, 200.0F }, 30.0F, 0.0F, BLACK);
+    } else if (hasWon_) {
+        DrawTextEx(font_->get(), "ROOM CLEAR", { 300.0F, 200.0F }, 30.0F, 0.0F, DARKGREEN);
+    }
 }
 
 void Application::updateEntities(float dt) {
@@ -100,7 +133,7 @@ void Application::updateEntities(float dt) {
     }
 
     for (entities::Enemy& enemy : enemies_) {
-        enemy.update(dt);
+        enemy.update(dt, player_.position());
     }
 }
 
@@ -141,13 +174,18 @@ void Application::resolveCollisions() {
         }
     }
 
-    for (const entities::Enemy& enemy : enemies_) {
+    for (entities::Enemy& enemy : enemies_) {
         if (!enemy.isAlive()) {
             continue;
         }
 
         if (CheckCollisionRecs(player_.bounds(), enemy.bounds())) {
             player_.resolveCollision(enemy.bounds());
+            if (enemy.damagesPlayer()) {
+                player_.takeDamage();
+            }
+        } else {
+            enemy.resetPlayerDamage();
         }
     }
 }
@@ -157,11 +195,44 @@ void Application::removeDestroyedEntities() {
         return !projectile.isAlive() || !CheckCollisionRecs(projectile.bounds(), kWorldBounds);
     });
 
-    std::erase_if(enemies_, [](const entities::Enemy& enemy) {
+    const auto defeatedEnemies = std::erase_if(enemies_, [](const entities::Enemy& enemy) {
         return !enemy.isAlive();
     });
+
+    enemiesDefeated_ += static_cast<int>(defeatedEnemies);
+    hasWon_ = enemiesDefeated_ >= kEnemiesToDefeat;
 }
 
 void Application::spawnProjectile() {
-    projectiles_.emplace_back(kProjectileSpawnPosition, kProjectileDirection);
+    const Vector2 mousePosition = input::mousePosition();
+    const Vector2 direction = Vector2Subtract(mousePosition, player_.position());
+    if (Vector2LengthSqr(direction) == 0.0F) {
+        return;
+    }
+
+    projectiles_.emplace_back(player_.position(), direction);
+}
+
+void Application::spawnEnemy() {
+    std::uniform_int_distribution<int> sideDistribution(0, 3);
+    std::uniform_real_distribution<float> xDistribution(0.0F, static_cast<float>(kWindowWidth));
+    std::uniform_real_distribution<float> yDistribution(0.0F, static_cast<float>(kWindowHeight));
+
+    Vector2 spawnPosition {};
+    switch (sideDistribution(randomEngine_)) {
+    case 0:
+        spawnPosition = { xDistribution(randomEngine_), -kEnemySpawnMargin };
+        break;
+    case 1:
+        spawnPosition = { xDistribution(randomEngine_), kWindowHeight + kEnemySpawnMargin };
+        break;
+    case 2:
+        spawnPosition = { -kEnemySpawnMargin, yDistribution(randomEngine_) };
+        break;
+    default:
+        spawnPosition = { kWindowWidth + kEnemySpawnMargin, yDistribution(randomEngine_) };
+        break;
+    }
+
+    enemies_.emplace_back(spawnPosition);
 }

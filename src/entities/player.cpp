@@ -32,6 +32,18 @@ const Rectangle& Player::bounds() const noexcept {
     return bounds_;
 }
 
+const Vector2& Player::position() const noexcept {
+    return position_;
+}
+
+int Player::health() const noexcept {
+    return health_;
+}
+
+bool Player::isAlive() const noexcept {
+    return health_ > 0;
+}
+
 void Player::resolveCollision(const Rectangle& otherBounds) noexcept {
     const Rectangle overlap = GetCollisionRec(bounds_, otherBounds);
     if (overlap.width <= 0.0F || overlap.height <= 0.0F) {
@@ -50,6 +62,12 @@ void Player::resolveCollision(const Rectangle& otherBounds) noexcept {
     }
 
     updateBounds();
+}
+
+void Player::takeDamage() noexcept {
+    if (health_ > 0) {
+        --health_;
+    }
 }
 
 void Player::updateBounds() noexcept {

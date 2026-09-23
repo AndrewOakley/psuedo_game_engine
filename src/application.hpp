@@ -1,7 +1,10 @@
 #pragma once
 
+#include <optional>
+#include <random>
 #include <vector>
 
+#include "resources/font.hpp"
 #include "entities/enemy.hpp"
 #include "entities/player.hpp"
 #include "entities/projectile.hpp"
@@ -10,6 +13,7 @@
 class Application {
 public:
     Application() = default;
+    ~Application();
 
     Application(const Application&) = delete;
     Application& operator=(const Application&) = delete;
@@ -17,19 +21,26 @@ public:
     [[nodiscard]] bool init();
 
     void run();
-    void shutdown();
 
 private:
+    void shutdown();
+    std::optional<resources::FontResource> font_;
     entities::Player player_;
     std::vector<entities::Enemy> enemies_;
     std::vector<entities::Wall> walls_;
     std::vector<entities::Projectile> projectiles_;
-    float projectileCooldown_ { 0.5F };
-    float projectileTimer_ { 0.0F };
+    float enemySpawnCooldown_ { 1.0f };
+    float enemySpawnTimer_ { 0.0f };
+    std::mt19937 randomEngine_ { std::random_device {}() };
+    int enemiesDefeated_ { 0 };
+    bool hasWon_ { false };
+
+    static constexpr int kEnemiesToDefeat = 10;
 
     void update(float dt);
     void draw();
     void spawnProjectile();
+    void spawnEnemy();
     void updateEntities(float dt);
     void resolveCollisions();
     void removeDestroyedEntities();

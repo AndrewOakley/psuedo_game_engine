@@ -1,5 +1,4 @@
 #include "entities/enemy.hpp"
-
 #include "raymath.h"
 
 namespace entities {
@@ -8,18 +7,14 @@ Enemy::Enemy(Vector2 startPosition)
     updateBounds();
 }
 
-void Enemy::update(float dt) {
+void Enemy::update(float dt, Vector2 targetPosition) {
     if (!alive_) {
         return;
     }
 
-    directionTimer_ += dt;
-    while (directionTimer_ >= directionCooldown_) {
-        directionTimer_ -= directionCooldown_;
-        direction_.y *= -1.0F;
-    }
+    const Vector2 direction = Vector2Subtract(targetPosition, position_);
 
-    velocity_ = Vector2Scale(direction_, kMoveSpeed);
+    velocity_ = Vector2Scale(Vector2Normalize(direction), kMoveSpeed);
     position_ = Vector2Add(position_, Vector2Scale(velocity_, dt));
     updateBounds();
 }
@@ -41,6 +36,19 @@ bool Enemy::isAlive() const noexcept {
 
 void Enemy::destroy() noexcept {
     alive_ = false;
+}
+
+bool Enemy::damagesPlayer() noexcept {
+    if (hasDamagedPlayer_) {
+        return false;
+    }
+
+    hasDamagedPlayer_ = true;
+    return true;
+}
+
+void Enemy::resetPlayerDamage() noexcept {
+    hasDamagedPlayer_ = false;
 }
 
 void Enemy::updateBounds() noexcept {
