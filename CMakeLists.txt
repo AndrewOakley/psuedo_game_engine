@@ -31,6 +31,8 @@ add_executable(${PROJECT_NAME}
     src/entities/wall.cpp
     src/entities/projectile.cpp
     src/entities/enemy.cpp
+    src/entities/snake.cpp
+    src/entities/apple.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 target_include_directories(${PROJECT_NAME} PRIVATE src)

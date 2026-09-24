@@ -5,10 +5,9 @@
 #include <vector>
 
 #include "resources/font.hpp"
-#include "entities/enemy.hpp"
-#include "entities/player.hpp"
-#include "entities/projectile.hpp"
 #include "entities/wall.hpp"
+#include "entities/snake.hpp"
+#include "entities/apple.hpp"
 
 class Application {
 public:
@@ -25,24 +24,17 @@ public:
 private:
     void shutdown();
     std::optional<resources::FontResource> font_;
-    Camera2D camera { 0 };
-    entities::Player player_;
-    std::vector<entities::Enemy> enemies_;
-    std::vector<entities::Wall> walls_;
-    std::vector<entities::Projectile> projectiles_;
-    float enemySpawnCooldown_ { 1.0f };
-    float enemySpawnTimer_ { 0.0f };
-    std::mt19937 randomEngine_ { std::random_device {}() };
-    int enemiesDefeated_ { 0 };
-    bool hasWon_ { false };
 
-    static constexpr int kEnemiesToDefeat = 10;
+    entities::SnakeChain snakeChain_;
+    entities::Apple apple_;
+    std::vector<entities::Wall> walls_;
+
+    std::mt19937 randomEngine_ { std::random_device {}() };
+    bool hasWon_ { false };
 
     void update(float dt);
     void draw();
-    void spawnProjectile();
-    void spawnEnemy();
+    void spawnApple();
     void updateEntities(float dt);
     void resolveCollisions();
-    void removeDestroyedEntities();
 };
